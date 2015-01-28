@@ -1,3 +1,10 @@
+/* TODO: Rotation needs to be tweaked. Gets stuck at 360 & 0.
+This is all a work in progress. I'm expanding on the free Unity script called of course "DragRigidbody"
+and attempting to add more "Amnesia-esque" features to it since that seems to be what a lot of people
+are trying to achieve but falling short on. I am not an EXPERT by any means, this is not my job,
+but with that said, I do have slight coding experience, and have a half decent grasp on maths.
+Do not expect perfection, but I will try my best to make this work out well. */
+
 var spring = 50.0;
 var damper = 5.0;
 var drag = 10.0;
