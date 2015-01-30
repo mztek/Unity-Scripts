@@ -1,9 +1,10 @@
-/* TODO: Rotation needs to be tweaked. Gets stuck at 360 & 0.
+/* 
 This is all a work in progress. I'm expanding on the free Unity script called of course "DragRigidbody"
 and attempting to add more "Amnesia-esque" features to it since that seems to be what a lot of people
 are trying to achieve but falling short on. I am not an EXPERT by any means, this is not my job,
 but with that said, I do have slight coding experience, and have a half decent grasp on maths.
-Do not expect perfection, but I will try my best to make this work out well. */
+Do not expect perfection, but I will try my best to make this work out well. 
+*/
 
 var spring = 50.0;
 var damper = 5.0;
@@ -14,25 +15,36 @@ var attachToCenterOfMass = false;
 var speed = 0.2;
 var throwForce : float;
 var throwRange : float;
-var oldSensX : float;
-var oldSensY : float;
-	
+var oldSensY = 15;
+var oldSensX = 15;
+
+private var vertRotAxis : Vector3;
+ private var horizontalRot : float;
+ private var verticalRot : float;
+ 				
 private var springJoint : SpringJoint;
 
+function Start ()
+{
 
+}
 
 function Update ()
 {
         // Make sure the user pressed the mouse down
         if (!Input.GetMouseButtonDown (0))
-                return;
-
+        	return;
+		if (!Input.GetMouseButtonDown (0))
+			{
+				Camera.main.GetComponent("MouseLook").sensitivityX = oldSensX;
+				Camera.main.GetComponent("MouseLook").sensitivityY = oldSensY;
+			}
 		Screen.lockCursor = true;
         var mainCamera = FindCamera();
                 
         // We need to actually hit an object
         var hit : RaycastHit;
-        if (!Physics.Raycast(mainCamera.ScreenPointToRay(Input.mousePosition), hit, 100))
+        if (!Physics.Raycast(mainCamera.ScreenPointToRay(Input.mousePosition), hit, 4))
                 return;
         // We need to hit a rigidbody that is not kinematic
         if (!hit.rigidbody || hit.rigidbody.isKinematic)
@@ -73,14 +85,12 @@ function DragObject (distance : float)
 		springJoint.connectedBody.drag = drag;
         springJoint.connectedBody.angularDrag = angularDrag;
         var mainCamera = FindCamera();
-        var oldSensX = mainCamera.GetComponent("MouseLook").sensitivityX;
-		var oldSensY = mainCamera.GetComponent("MouseLook").sensitivityY;
-        
+		
+                                
 		oldYRotCam = mainCamera.transform.eulerAngles.y;
 		oldYRotObj = springJoint.connectedBody.transform.eulerAngles.y;
 		oldYRotComp = oldYRotCam - oldYRotObj;
-		
-		
+
 		while (Input.GetMouseButton (0))
         {
         		
@@ -88,16 +98,17 @@ function DragObject (distance : float)
         		newYRot = newYRotCam - oldYRotComp;
                 var ray = mainCamera.ScreenPointToRay (Input.mousePosition);
                 springJoint.transform.position = ray.GetPoint(distance);
-                springJoint.connectedBody.transform.eulerAngles.y = oldYRotObj + newYRot;
+                
                 yield;
-        
-        
-        		
+        if (Input.GetAxis("Rotate") == 0)
+        	{
+        		springJoint.connectedBody.transform.eulerAngles.y = oldYRotObj + newYRot;
+        	}
         	
                         
-        if (distance > 4)
+        if (distance > 5)
 			{
-				distance = 4;
+				distance = 5;
 			}
 		
 		if (distance < 2)
@@ -105,7 +116,7 @@ function DragObject (distance : float)
 				distance = 2;
 			}
 		
-		if (Input.GetAxis("Mouse ScrollWheel") > 0 && distance <= 4)
+		if (Input.GetAxis("Mouse ScrollWheel") > 0 && distance <= 5)
 			{
 				distance += speed;
 			}
@@ -114,22 +125,27 @@ function DragObject (distance : float)
 			{
 				distance -= speed;
 			}
-			
-		if (Input.GetAxis("Rotate") != 0)
-   			{
-     			
-				Camera.main.GetComponent("MouseLook").sensitivityX = 0F;
-				Camera.main.GetComponent("MouseLook").sensitivityY = 0F;
-								
-    			oldYRotObj += -Input.GetAxis("Mouse X");
-    			springJoint.connectedBody.transform.RotateAround(mainCamera.transform.right, Input.GetAxis("Mouse Y") * Time.deltaTime);      			
-    		}
 		
 		if (Input.GetAxis("Rotate") == 0)
 			{
 				mainCamera.GetComponent("MouseLook").sensitivityX = oldSensX;
 				mainCamera.GetComponent("MouseLook").sensitivityY = oldSensY;
-			}	
+			}
+				
+		if (Input.GetAxis("Rotate") != 0)
+   			{
+     			
+				Camera.main.GetComponent("MouseLook").sensitivityX = 0F;
+				Camera.main.GetComponent("MouseLook").sensitivityY = 0F;
+		
+ 			  vertAxis = springJoint.connectedBody.transform.InverseTransformDirection(mainCamera.transform.TransformDirection(Vector3.right)).normalized;
+ 			  springJoint.connectedBody.transform.Rotate(vertAxis, Input.GetAxis("Mouse Y") * 6);
+ 			  
+ 			  horzAxis = springJoint.connectedBody.transform.InverseTransformDirection(mainCamera.transform.TransformDirection(Vector3.up)).normalized;
+ 			  springJoint.connectedBody.transform.Rotate(horzAxis, -Input.GetAxis("Mouse X") * 6);
+ 			}
+		
+		
 			
 		if (Input.GetMouseButtonDown (1))
 			{
