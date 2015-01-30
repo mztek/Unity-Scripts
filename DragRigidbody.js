@@ -102,7 +102,8 @@ function DragObject (distance : float)
                 yield;
         if (Input.GetAxis("Rotate") == 0)
         	{
-        		springJoint.connectedBody.transform.eulerAngles.y = oldYRotObj + newYRot;
+        		horzRot = springJoint.connectedBody.transform.InverseTransformDirection(Vector3.up).normalized;
+        		springJoint.connectedBody.transform.Rotate(horzRot, Input.GetAxis("Mouse X") * 15);
         	}
         	
                         
@@ -143,6 +144,10 @@ function DragObject (distance : float)
  			  
  			  horzAxis = springJoint.connectedBody.transform.InverseTransformDirection(mainCamera.transform.TransformDirection(Vector3.up)).normalized;
  			  springJoint.connectedBody.transform.Rotate(horzAxis, -Input.GetAxis("Mouse X") * 6);
+ 			  
+ 			  oldYRotCam = mainCamera.transform.eulerAngles.y;
+			  oldYRotObj = springJoint.connectedBody.transform.eulerAngles.y;
+			  oldYRotComp = oldYRotCam - oldYRotObj;
  			}
 		
 		
