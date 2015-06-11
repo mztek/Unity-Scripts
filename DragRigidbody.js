@@ -6,6 +6,9 @@ but with that said, I do have slight coding experience, and have a half decent g
 Do not expect perfection, but I will try my best to make this work out well. 
 */
 
+var player : GameObject;
+var playcam : GameObject;
+var grabbed : Transform;
 var spring = 50.0;
 var damper = 5.0;
 var drag = 10.0;
@@ -17,6 +20,7 @@ var throwForce : float;
 var throwRange : float;
 var oldSensY = 15;
 var oldSensX = 15;
+var rotate : float;
 
 private var vertRotAxis : Vector3;
  private var horizontalRot : float;
@@ -31,6 +35,8 @@ function Start ()
 
 function Update ()
 {
+		rotate = Input.GetAxis("Rotate");
+		
         // Make sure the user pressed the mouse down
         if (!Input.GetMouseButtonDown (0))
         	return;
@@ -85,20 +91,19 @@ function DragObject (distance : float)
 		springJoint.connectedBody.drag = drag;
         springJoint.connectedBody.angularDrag = angularDrag;
         var mainCamera = FindCamera();
-		
-                                
+        grabbed = springJoint.connectedBody.transform;
+		                                
 		oldYRotCam = mainCamera.transform.eulerAngles.y;
 		oldYRotObj = springJoint.connectedBody.transform.eulerAngles.y;
 		oldYRotComp = oldYRotCam - oldYRotObj;
 
 		while (Input.GetMouseButton (0))
         {
-        		
         		newYRotCam = mainCamera.transform.eulerAngles.y;
         		newYRot = newYRotCam - oldYRotComp;
                 var ray = mainCamera.ScreenPointToRay (Input.mousePosition);
                 springJoint.transform.position = ray.GetPoint(distance);
-                
+                Physics.IgnoreCollision(player.collider, grabbed.collider);
                 yield;
         if (Input.GetAxis("Rotate") == 0)
         	{
@@ -131,11 +136,12 @@ function DragObject (distance : float)
 			{
 				mainCamera.GetComponent("MouseLook").sensitivityX = oldSensX;
 				mainCamera.GetComponent("MouseLook").sensitivityY = oldSensY;
+				player.GetComponent("MouseLook").sensitivityX = oldSensX;
 			}
 				
 		if (Input.GetAxis("Rotate") != 0)
    			{
-     			
+     			player.GetComponent("MouseLook").sensitivityX = 0F;
 				Camera.main.GetComponent("MouseLook").sensitivityX = 0F;
 				Camera.main.GetComponent("MouseLook").sensitivityY = 0F;
 		
@@ -155,8 +161,11 @@ function DragObject (distance : float)
 		if (Input.GetMouseButtonDown (1))
 			{
 				held = 0;
+				Physics.IgnoreCollision(player.collider, grabbed.collider, false);
+				grabbed = null;
 				mainCamera.GetComponent("MouseLook").sensitivityX = oldSensX;
 				mainCamera.GetComponent("MouseLook").sensitivityY = oldSensY;
+				player.GetComponent("MouseLook").sensitivityX = oldSensX;
 				springJoint.connectedBody.AddExplosionForce(throwForce,mainCamera.transform.position,throwRange);
 				springJoint.connectedBody.drag = oldDrag;
 				springJoint.connectedBody.angularDrag = oldAngularDrag;
@@ -168,6 +177,8 @@ function DragObject (distance : float)
         }
         if (springJoint.connectedBody)
         {
+        		Physics.IgnoreCollision(player.collider, grabbed.collider, false);
+        		grabbed = null;
                 springJoint.connectedBody.drag = oldDrag;
                 springJoint.connectedBody.angularDrag = oldAngularDrag;
                 springJoint.connectedBody = null;
